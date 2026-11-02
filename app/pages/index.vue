@@ -1,69 +1,132 @@
 <script setup lang="ts">
-import { sub } from 'date-fns'
-import type { DropdownMenuItem } from '@nuxt/ui'
-import type { Period, Range } from '~/types'
+import type { Range, Transaction } from '~/types'
+import { rangeToQuery, thisMonthRange } from '~/utils/mimir'
 
-const { isNotificationsSlideoverOpen } = useDashboard()
+const api = useMimirApi()
+const { refreshAfterTransactionChange } = useMimirRefresh()
 
-const items = [[{
-  label: 'New mail',
-  icon: 'i-lucide-send',
-  to: '/inbox'
-}, {
-  label: 'New customer',
-  icon: 'i-lucide-user-plus',
-  to: '/customers'
-}]] satisfies DropdownMenuItem[][]
+const range = shallowRef<Range>(thisMonthRange())
 
-const range = shallowRef<Range>({
-  start: sub(new Date(), { days: 14 }),
-  end: new Date()
-})
-const period = ref<Period>('daily')
+const queryParams = computed(() => rangeToQuery(range.value))
+const year = computed(() => range.value.end.getFullYear())
+
+const formOpen = ref(false)
+const editingTransaction = ref<Transaction | null>(null)
+
+const { data: categories } = await useAsyncData(
+  'tx-categories',
+  () => api.listCategories(),
+  { default: () => [] }
+)
+
+const { data: summary, pending: summaryPending, refresh: refreshSummary } = await useAsyncData(
+  'overview-summary',
+  () => api.getPeriodSummary(queryParams.value),
+  { watch: [queryParams] }
+)
+
+const { data: categorySummary, pending: categoryPending, refresh: refreshCategories } = await useAsyncData(
+  'overview-categories',
+  () => api.getCategorySummary({ ...queryParams.value, type: 'expense' }),
+  { watch: [queryParams] }
+)
+
+const { data: monthlySummary, pending: monthlyPending, refresh: refreshMonthly } = await useAsyncData(
+  'overview-monthly',
+  () => api.getMonthlySummary({ year: year.value }),
+  { watch: [year] }
+)
+
+const { data: recentTransactions, pending: recentPending, refresh: refreshRecent } = await useAsyncData(
+  'overview-recent',
+  () => api.listTransactions({ ...queryParams.value, limit: 10 }),
+  { watch: [queryParams] }
+)
+
+function refreshAll() {
+  refreshSummary()
+  refreshCategories()
+  refreshMonthly()
+  refreshRecent()
+}
+
+function openCreate() {
+  editingTransaction.value = null
+  formOpen.value = true
+}
+
+function openEdit(tx: Transaction) {
+  editingTransaction.value = tx
+  formOpen.value = true
+}
+
+async function onSaved() {
+  refreshAll()
+  await refreshAfterTransactionChange()
+}
 </script>
 
 <template>
-  <UDashboardPanel id="home">
+  <UDashboardPanel id="overview">
     <template #header>
-      <UDashboardNavbar title="Home" :ui="{ right: 'gap-3' }">
+      <UDashboardNavbar title="Overview">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
-
         <template #right>
-          <UTooltip text="Notifications" :shortcuts="['N']">
+          <AppNavbarTrailing>
             <UButton
+              icon="i-lucide-refresh-cw"
               color="neutral"
               variant="ghost"
               square
-              @click="isNotificationsSlideoverOpen = true"
-            >
-              <UChip color="error" inset>
-                <UIcon name="i-lucide-bell" class="size-5 shrink-0" />
-              </UChip>
-            </UButton>
-          </UTooltip>
-
-          <UDropdownMenu :items="items">
-            <UButton icon="i-lucide-plus" size="md" class="rounded-full" />
-          </UDropdownMenu>
+              @click="refreshAll"
+            />
+            <UButton
+              icon="i-lucide-plus"
+              label="Add transaction"
+              @click="openCreate"
+            />
+          </AppNavbarTrailing>
         </template>
       </UDashboardNavbar>
 
       <UDashboardToolbar>
         <template #left>
-          <!-- NOTE: The `-ms-1` class is used to align with the `DashboardSidebarCollapse` button here. -->
           <HomeDateRangePicker v-model="range" class="-ms-1" />
-
-          <HomePeriodSelect v-model="period" :range="range" />
         </template>
       </UDashboardToolbar>
     </template>
 
     <template #body>
-      <HomeStats :period="period" :range="range" />
-      <HomeChart :period="period" :range="range" />
-      <HomeSales :period="period" :range="range" />
+      <div class="space-y-6">
+        <MimirOverviewStats :summary="summary" :pending="summaryPending" />
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <MimirCategoryBreakdown
+            :items="categorySummary ?? []"
+            :pending="categoryPending"
+          />
+          <MimirMonthlySummary
+            :items="monthlySummary ?? []"
+            :year="year"
+            :pending="monthlyPending"
+          />
+        </div>
+
+        <MimirRecentTransactions
+          :transactions="recentTransactions ?? []"
+          :pending="recentPending"
+          @edit="openEdit"
+        />
+      </div>
+
+      <TransactionFormModal
+        v-model:open="formOpen"
+        :categories="categories ?? []"
+        :transaction="editingTransaction"
+        @saved="onSaved"
+      />
     </template>
   </UDashboardPanel>
 </template>

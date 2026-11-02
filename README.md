@@ -1,64 +1,64 @@
-# Nuxt Dashboard Template
+# Mimir Dashboard
 
-[![Nuxt UI](https://img.shields.io/badge/Made%20with-Nuxt%20UI-00DC82?logo=nuxt&labelColor=020420)](https://ui.nuxt.com)
+Visualization layer for the [Mimir](https://github.com) personal finance API. Browse period summaries, manage transactions and categories, and sign in through a JWT session proxied by Nuxt (no token in the browser).
 
-Get started with the Nuxt dashboard template with multiple pages, collapsible sidebar, keyboard shortcuts, light & dark mode, command palette and more, powered by [Nuxt UI](https://ui.nuxt.com).
+Built with [Nuxt UI](https://ui.nuxt.com) on Nuxt 4.
 
-- [Live demo](https://dashboard-template.nuxt.dev/)
-- [Documentation](https://ui.nuxt.com/docs/getting-started/installation/nuxt)
+## Prerequisites
 
-<a href="https://dashboard-template.nuxt.dev/" target="_blank">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://ui.nuxt.com/assets/templates/nuxt/dashboard-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="https://ui.nuxt.com/assets/templates/nuxt/dashboard-light.png">
-    <img alt="Nuxt Dashboard Template" src="https://ui.nuxt.com/assets/templates/nuxt/dashboard-light.png">
-  </picture>
-</a>
-
-> The dashboard template for Vue is on https://github.com/nuxt-ui-templates/dashboard-vue.
-
-## Quick Start
-
-```bash [Terminal]
-npm create nuxt@latest -- -t ui/dashboard
-```
-
-## Deploy your own
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-name=dashboard&repository-url=https%3A%2F%2Fgithub.com%2Fnuxt-ui-templates%2Fdashboard&demo-image=https%3A%2F%2Fui.nuxt.com%2Fassets%2Ftemplates%2Fnuxt%2Fdashboard-dark.png&demo-url=https%3A%2F%2Fdashboard-template.nuxt.dev%2F&demo-title=Nuxt%20Dashboard%20Template&demo-description=A%20dashboard%20template%20with%20multi-column%20layout%20for%20building%20sophisticated%20admin%20interfaces.)
+- Node.js 20+
+- [pnpm](https://pnpm.io)
+- A running Mimir API instance (OpenAPI reference: `server/api/template/mimir-openapi(3).json`)
 
 ## Setup
 
-Make sure to install the dependencies:
-
 ```bash
 pnpm install
+cp .env.example .env
 ```
 
-## Development Server
+Set the backend URL in `.env`:
 
-Start the development server on `http://localhost:3000`:
+```bash
+NUXT_MIMIR_API_BASE_URL=http://localhost:5000
+```
+
+Paths are forwarded as documented in the OpenAPI file (`/auth/login`, `/transactions`, `/summary`, …).
+
+## Development
 
 ```bash
 pnpm dev
 ```
 
-## Production
+Open [http://localhost:3000](http://localhost:3000). Unauthenticated users are redirected to `/login`.
 
-Build the application for production:
+## Scripts
 
-```bash
-pnpm build
-```
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Dev server |
+| `pnpm build` | Production build |
+| `pnpm preview` | Preview production build |
+| `pnpm lint` | ESLint |
+| `pnpm typecheck` | Vue/TS check |
 
-Locally preview production build:
+## App map
 
-```bash
-pnpm preview
-```
+| Route | Purpose |
+|-------|---------|
+| `/` | Overview — period totals, category breakdown, monthly table, recent transactions |
+| `/transactions` | List, filter, create, edit, delete transactions |
+| `/categories` | List and create categories |
+| `/account` | Profile and logout |
+| `/login`, `/register` | Authentication |
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## Architecture
 
-## Renovate integration
+The browser calls `/api/mimir/*` on the Nuxt server. Nitro forwards requests to `NUXT_MIMIR_API_BASE_URL` and attaches `Authorization: Bearer …` from an httpOnly `mimir-token` cookie set on login/register.
 
-Install [Renovate GitHub app](https://github.com/apps/renovate/installations/select_target) on your repository and you are good to go.
+Branding uses `public/logo.png` (smoke white, green, and black) with light mode as the default.
+
+## License
+
+See [LICENSE](LICENSE).
