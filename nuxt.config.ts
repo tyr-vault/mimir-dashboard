@@ -47,9 +47,27 @@ export default defineNuxtConfig({
 
   compatibilityDate: '2024-07-11',
 
+  sourcemap: {
+    server: false,
+    client: false
+  },
+
   vite: {
     optimizeDeps: {
       include: ['date-fns', 'zod']
+    },
+    build: {
+      rollupOptions: {
+        onwarn(warning, warn) {
+          const message = warning.message ?? ''
+          // Nuxt 4.4+ / Tailwind transform plugins without sourcemaps (harmless when sourcemaps off)
+          if (warning.code === 'SOURCEMAP_BROKEN') return
+          if (message.includes('module-preload-polyfill')) return
+          // VueUse ships #__PURE__ annotations Rollup sometimes cannot place-map (safe to ignore)
+          if (message.includes('#__PURE__') && message.includes('@vueuse/core')) return
+          warn(warning)
+        }
+      }
     }
   },
 

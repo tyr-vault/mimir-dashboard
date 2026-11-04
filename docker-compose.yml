@@ -1,0 +1,22 @@
+# Production — Nitro node server. Reach mimir-api on the host published port.
+services:
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NUXT_MIMIR_API_BASE_URL: http://host.docker.internal:${API_PORT:-5000}
+        NUXT_PUBLIC_SITE_URL: ${NUXT_PUBLIC_SITE_URL:-http://localhost:3000}
+    container_name: mimir-dashboard
+    ports:
+      - '${UI_PORT:-3000}:3000'
+    env_file:
+      - .env
+    environment:
+      HOST: 0.0.0.0
+      NITRO_PORT: '3000'
+      NUXT_MIMIR_API_BASE_URL: http://host.docker.internal:${API_PORT:-5000}
+      NUXT_PUBLIC_SITE_URL: ${NUXT_PUBLIC_SITE_URL:-http://localhost:3000}
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    restart: unless-stopped

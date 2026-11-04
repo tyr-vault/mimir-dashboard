@@ -1,47 +1,44 @@
 # Mimir Dashboard
 
-Visualization layer for the [Mimir](https://github.com) personal finance API. Browse period summaries, manage transactions and categories, and sign in through a JWT session proxied by Nuxt (no token in the browser).
+Visualization layer for the Mimir personal finance API. Browse period summaries, manage transactions and categories, and sign in through a JWT session proxied by Nuxt (no token in the browser).
 
 Built with [Nuxt UI](https://ui.nuxt.com) on Nuxt 4.
 
-## Prerequisites
+## Docker (recommended)
 
-- Node.js 20+
-- [pnpm](https://pnpm.io)
-- A running Mimir API instance (OpenAPI reference: `server/api/template/mimir-openapi(3).json`)
+Same pattern as `mimir-api` / `mimir-bot`: base `docker-compose.yml` (prod) + `docker-compose.dev.yml` (hot reload).
 
-## Setup
+```bash
+make setup
+make dev          # foreground, port 3000
+make up           # detached dev
+make prod-up      # production Nitro server in Docker
+make logs         # dev logs
+make prod-logs    # prod logs
+make down         # stop dev stack
+make prod-down    # stop prod stack
+```
+
+Inside Docker, Nitro reaches the API at `http://host.docker.internal:5000` (override with `API_PORT` / root `.env`).
+
+From the meta repo: `make dev ui` or `make prod ui`.
+
+## Host development (optional)
+
+Requires Node.js 20+ and [pnpm](https://pnpm.io).
 
 ```bash
 pnpm install
 cp .env.example .env
+make host-dev
 ```
 
-Set the backend URL in `.env`:
+## Environment
 
-```bash
-NUXT_MIMIR_API_BASE_URL=http://localhost:5000
-```
-
-Paths are forwarded as documented in the OpenAPI file (`/auth/login`, `/transactions`, `/summary`, …).
-
-## Development
-
-```bash
-pnpm dev
-```
-
-Open [http://localhost:3000](http://localhost:3000). Unauthenticated users are redirected to `/login`.
-
-## Scripts
-
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Dev server |
-| `pnpm build` | Production build |
-| `pnpm preview` | Preview production build |
-| `pnpm lint` | ESLint |
-| `pnpm typecheck` | Vue/TS check |
+| Variable | Purpose |
+|----------|---------|
+| `NUXT_MIMIR_API_BASE_URL` | Upstream API for Nitro proxy (see `.env.example`) |
+| `NUXT_PUBLIC_SITE_URL` | Public dashboard URL |
 
 ## App map
 
@@ -50,14 +47,13 @@ Open [http://localhost:3000](http://localhost:3000). Unauthenticated users are r
 | `/` | Overview — period totals, category breakdown, monthly table, recent transactions |
 | `/transactions` | List, filter, create, edit, delete transactions |
 | `/categories` | List and create categories |
+| `/drafts` | Confirm or reject bot drafts |
 | `/account` | Profile and logout |
 | `/login`, `/register` | Authentication |
 
 ## Architecture
 
 The browser calls `/api/mimir/*` on the Nuxt server. Nitro forwards requests to `NUXT_MIMIR_API_BASE_URL` and attaches `Authorization: Bearer …` from an httpOnly `mimir-token` cookie set on login/register.
-
-Branding uses `public/logo.png` (smoke white, green, and black) with light mode as the default.
 
 ## License
 
