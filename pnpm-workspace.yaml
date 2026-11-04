@@ -1,7 +1,7 @@
+# pnpm 11+ build policy (required for Docker / CI — see https://pnpm.io/settings/build)
 allowBuilds:
-  '@parcel/watcher': false
-  '@tailwindcss/oxide': false
-  esbuild: false
-  maplibre-gl: false
-  unrs-resolver: false
-  vue-demi: false
+  '@parcel/watcher': true
+  esbuild: true
+  maplibre-gl: true
+  unrs-resolver: true
+  vue-demi: true
