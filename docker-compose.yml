@@ -20,11 +20,4 @@ services:
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     restart: unless-stopped
-    networks:
-      - homelab
-
-networks:
-  homelab:
-    external: true
-    name: ${HOMELAB_NETWORK:-homelab}
 

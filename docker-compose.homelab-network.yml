@@ -1,0 +1,13 @@
+# Optional — attach dashboard to the same Docker network as Caddy.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.homelab-network.yml up -d
+# Or: HOMELAB_NETWORK=homelab make prod-up  (Makefile adds this file automatically)
+
+services:
+  dashboard:
+    networks:
+      - homelab
+
+networks:
+  homelab:
+    external: true
+    name: ${HOMELAB_NETWORK:-homelab}
