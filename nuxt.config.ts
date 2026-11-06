@@ -14,11 +14,6 @@ export default defineNuxtConfig({
     }
   ],
 
-  // Avoid @nuxt/fonts fetching fonts.google.com at dev/build (offline/VPN/firewall).
-  ui: {
-    fonts: false
-  },
-
   devtools: {
     enabled: true
   },
@@ -31,12 +26,13 @@ export default defineNuxtConfig({
     storageKey: 'mimir-color-mode'
   },
 
-  runtimeConfig: {
-    mimirApiBaseUrl: 'http://localhost:5000'
+  // Avoid @nuxt/fonts fetching fonts.google.com at dev/build (offline/VPN/firewall).
+  ui: {
+    fonts: false
   },
 
-  devServer: {
-    port: 3000
+  runtimeConfig: {
+    mimirApiBaseUrl: 'http://localhost:5000'
   },
 
   routeRules: {
@@ -45,12 +41,16 @@ export default defineNuxtConfig({
     }
   },
 
-  compatibilityDate: '2024-07-11',
-
   sourcemap: {
     server: false,
     client: false
   },
+
+  devServer: {
+    port: 3000
+  },
+
+  compatibilityDate: '2024-07-11',
 
   vite: {
     optimizeDeps: {

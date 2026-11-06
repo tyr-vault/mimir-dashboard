@@ -193,7 +193,12 @@ async function saveCategory(event: FormSubmitEvent<CatSchema>) {
         </UFormField>
 
         <div class="flex justify-end gap-2">
-          <UButton label="Cancel" color="neutral" variant="ghost" @click="open = false" />
+          <UButton
+            label="Cancel"
+            color="neutral"
+            variant="ghost"
+            @click="open = false"
+          />
           <UButton type="submit" label="Save" :loading="loading" />
         </div>
       </UForm>
@@ -210,7 +215,12 @@ async function saveCategory(event: FormSubmitEvent<CatSchema>) {
         </UFormField>
 
         <div class="flex justify-end gap-2">
-          <UButton label="Cancel" color="neutral" variant="ghost" @click="open = false" />
+          <UButton
+            label="Cancel"
+            color="neutral"
+            variant="ghost"
+            @click="open = false"
+          />
           <UButton type="submit" label="Save" :loading="loading" />
         </div>
       </UForm>
