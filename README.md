@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="public/logo.png" alt="Mimir Dashboard logo" width="240" />
+</p>
+
 # Mimir Dashboard
 
 Web UI for the Mimir personal finance stack: period summaries, transactions, categories, and bot draft review. Authentication uses JWT stored in an httpOnly cookie on the Nuxt server; the browser never holds the API token.
